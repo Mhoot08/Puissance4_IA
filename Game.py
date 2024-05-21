@@ -1,5 +1,5 @@
 import copy
-
+import random
 import numpy as np
 
 ROWS = 6
@@ -10,7 +10,7 @@ def create_board():
 
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
-
+game_over = False
 def is_valid_location(board, col):
     return board[ROWS-1][col] == 0
 
@@ -165,6 +165,7 @@ def joueurMax(n,p, row, col):
                 action = c
     return u, action
 
+board = create_board()
 def joueurMin(n,p, row, col):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
@@ -228,9 +229,85 @@ def joueurMinAlphaBeta(n,p,alpha, beta, row, col):
                 return u, action
     return u, action
 
-board = create_board()
-game_over = False
+## Algo MCTS
 turn = 0
+
+class Node:
+    def __init__(self, board, colNotFull, piece, terminated=False, parent=None):
+        self.piece = piece
+        self.board = copy.deepcopy(board)
+        self.row = None
+        self.col = None
+        self.colNotFull = colNotFull
+        self.parent = parent
+        self.children = []
+        self.terminated = terminated
+        self.isFullyExpanded = False
+
+
+    def add_child(self, child):
+        self.children.append(child)
+        isExpanded = all(isExpanded for isExpanded in self.children.isFullyExpanded) and len(self.children) == len(self.colNotFull)
+
+
+
+
+
+def defaultPolicy(v):
+    while v.terminated is False:
+        #Gerer quandd on retombe sur un même fils
+        col = random.choice(v.colNotFull)
+        n = copy.deepcopy(v.board)
+        piece_inverse = 2 if v.piece == 1 else 1
+        row = get_next_open_row(n, col)
+        n[row][col] = piece_inverse
+        colNotFull = []
+        for c in range(COLS):
+            if board[c][ROWS - 1] == 0:
+                colNotFull.append(c)
+        parent = v
+        v = Node(board, colNotFull, piece_inverse, v)
+        parent.add_child(v)
+        if colNotFull == [] or winning_move(n, row, col):
+            v.terminated = True
+            v.isFullyExpanded = True
+    return eval_fonction(v.board)
+
+def backup(v, delta):
+    while v is not None:
+        v.visits += 1
+        v.score += delta
+        delta = -delta
+        v = v.parent
+
+def bestChild(v, c):
+    return max(v.children, key=lambda x: x.score/x.visits + c * np.sqrt(2 * np.log(v.visits) / x.visits))
+
+def uctsearch(board, piece):
+    colNotFull = []
+    for c in range(COLS):
+        if board[c][ROWS-1] == 0:
+            colNotFull.append(c)
+    v0 = Node(board, colNotFull, piece )
+    for i in range(1000):
+        v1 = treePolicy(v0)
+        delta = defaultPolicy(v1)
+        backup(v1, delta)
+    return bestChild(v0, 0)
+
+
+def treePolicy(v):
+    while not v.terminated:
+        if not v.isFullyExpanded:
+            return expand(v)
+        else:
+            #Deuxième argument = c dans BestChild
+            v = bestChild(v, 1/np.sqrt(2))
+    return v
+
+def expand(v):
+    pass
+
 
 while not game_over:
     # Ask for Player 1 input
