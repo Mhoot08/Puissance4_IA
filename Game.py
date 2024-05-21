@@ -177,7 +177,7 @@ def joueurMin(n,p, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 2
-            eval = joueurMax(n, p-1, r, c)[0]
+            eval = joueurMax(n_deepcopy, p-1, r, c)[0]
             if eval < u:
                 u = eval
                 action = c
@@ -205,7 +205,6 @@ def joueurMaxAlphaBeta(n,p, alpha, beta, row, col):
             eval = joueurMinAlphaBeta(n_deepcopy, p - 1,alpha, beta, r, c)[0]
             if eval > u:
                 u = eval
-                print(f"c = {c}, u = {u}")
                 action = c
             alpha = max(alpha, u)
             if alpha >= beta:
@@ -239,7 +238,7 @@ while not game_over:
     # Ask for Player 1 input
     if turn == 0:
         #col = int(input("Player 1, choose a column (0-6):"))
-        col = minimax(board, 4, 1)
+        col = alphabeta(board, 4, 1)
         print(f"Player 1, choose a column (0-6): {col}")
         row = get_next_open_row(board, col)
         drop_piece(board, row, col, 1)
