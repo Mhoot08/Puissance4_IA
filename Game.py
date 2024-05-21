@@ -40,8 +40,6 @@ def winning_move(board, row, col):
         if all([board[row][col-3+i] == piece for i in range(4)]):
             return True
 
-
-
     # Check vertical locations
     if row <= ROWS-4:
         if all([board[row+i][col] == piece for i in range(4)]):
@@ -189,7 +187,7 @@ def alphabeta(board, maxProfondeur, player):
     if player == 1:
         eval, action = joueurMaxAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0)
     else:
-        eval, action = joueurMinAlphaBeta(board, maxProfondeur, float("inf"), float("-inf"), 0, 0)
+        eval, action = joueurMinAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0)
     return action
 
 def joueurMaxAlphaBeta(n,p, alpha, beta, row, col):
@@ -221,7 +219,7 @@ def joueurMinAlphaBeta(n,p,alpha, beta, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 2
-            eval = joueurMaxAlphaBeta(n, p-1,alpha, beta, r, c)[0]
+            eval = joueurMaxAlphaBeta(n_deepcopy, p-1,alpha, beta, r, c)[0]
             if eval < u:
                 u = eval
                 action = c
