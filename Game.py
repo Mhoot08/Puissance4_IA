@@ -1,11 +1,13 @@
 import copy
 import random
 import numpy as np
+import time
 import networkx as nx
 import matplotlib.pyplot as plt
 
 ROWS = 6
 COLS = 7
+
 
 
 def create_board():
@@ -163,16 +165,21 @@ def eval_player(board, piece, enemy_piece):
 ##Algo MiniMax
 list_time_minimax = {"type" : ["minimax"], "profondeur" : [0,0],"1": [], "2": []}
 def minimax(board, maxProfondeur, player):
+    list_time_minimax["profondeur"][player-1] = maxProfondeur
+    start_time = time.time()
     if player == 1:
         eval, action = joueurMax(board, maxProfondeur, 0, 0, player)
         end_time = time.time()
         list_time_minimax["1"].append(end_time - start_time)
     else:
-        eval, action = joueurMin(board, maxProfondeur, 0, 0)
+        eval, action = joueurMin(board, maxProfondeur, 0, 0, player)
+        end_time = time.time()
+        list_time_minimax["2"].append(end_time - start_time)
+    print(f"temps de calcul minimax:{end_time-start_time}")
     return action
 
 
-def joueurMax(n, p, row, col):
+def joueurMax(n, p, row, col, player):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('-inf')
@@ -182,7 +189,7 @@ def joueurMax(n, p, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 1
-            eval = joueurMin(n_deepcopy, p - 1, r, c)[0]
+            eval = joueurMin(n_deepcopy, p - 1, r, c, player)[0]
             if eval > u:
                 u = eval
                 action = c
@@ -192,7 +199,7 @@ def joueurMax(n, p, row, col):
 board = create_board()
 
 
-def joueurMin(n, p, row, col):
+def joueurMin(n, p, row, col, player):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('inf')
@@ -202,7 +209,7 @@ def joueurMin(n, p, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 2
-            eval = joueurMax(n_deepcopy, p - 1, r, c)[0]
+            eval = joueurMax(n_deepcopy, p - 1, r, c, player)[0]
             if eval < u:
                 u = eval
                 action = c
@@ -212,16 +219,21 @@ def joueurMin(n, p, row, col):
 ##Algo Alpha-Beta
 list_time_alphabeta = {"type" : ["alphabeta"], "profondeur" : [0,0], "1": [], "2": []}
 def alphabeta(board, maxProfondeur, player):
+    list_time_alphabeta["profondeur"][player-1] = maxProfondeur
+    start_time = time.time()
     if player == 1:
         eval, action = joueurMaxAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0, player)
         end_time = time.time()
         list_time_alphabeta["1"].append(end_time - start_time)
     else:
-        eval, action = joueurMinAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0)
+        eval, action = joueurMinAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0, player)
+        end_time = time.time()
+        list_time_alphabeta["2"].append(end_time - start_time)
+    print(f"temps de calcul alphabeta:{end_time - start_time}")
     return action
 
 
-def joueurMaxAlphaBeta(n, p, alpha, beta, row, col):
+def joueurMaxAlphaBeta(n, p, alpha, beta, row, col, player):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('-inf')
@@ -231,7 +243,7 @@ def joueurMaxAlphaBeta(n, p, alpha, beta, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 1
-            eval = joueurMinAlphaBeta(n_deepcopy, p - 1, alpha, beta, r, c)[0]
+            eval = joueurMinAlphaBeta(n_deepcopy, p - 1, alpha, beta, r, c, player)[0]
             if eval > u:
                 u = eval
                 action = c
@@ -241,7 +253,7 @@ def joueurMaxAlphaBeta(n, p, alpha, beta, row, col):
     return u, action
 
 
-def joueurMinAlphaBeta(n, p, alpha, beta, row, col):
+def joueurMinAlphaBeta(n, p, alpha, beta, row, col, player):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('inf')
@@ -251,7 +263,7 @@ def joueurMinAlphaBeta(n, p, alpha, beta, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 2
-            eval = joueurMaxAlphaBeta(n_deepcopy, p - 1, alpha, beta, r, c)[0]
+            eval = joueurMaxAlphaBeta(n_deepcopy, p - 1, alpha, beta, r, c, player)[0]
             if eval < u:
                 u = eval
                 action = c
@@ -374,6 +386,44 @@ def expand(v):
             child = Node(n, piece_inverse, v, row, c)
             return child
 
+
+import matplotlib.pyplot as plt
+
+
+def plot_from_dicts(*dicts):
+    """
+    Affiche plusieurs courbes à partir de dictionnaires contenant des listes de nombres.
+
+    :param dicts: Une ou plusieurs dictionnaires contenant des listes de nombres à afficher.
+    """
+    plt.figure(figsize=(10, 5))
+
+    # Liste des labels et des courbes correspondantes qui ont des données
+    labels = []
+    plots = []
+
+    for d in dicts:
+        label = d.get("type", ["Unknown"])[0]
+        depths = d.get("profondeur", [])
+        for i, key in enumerate(d.keys()):
+            if key != "type" and key != "profondeur" and d[key]:
+                depth_label = depths[0] if key == "1" else depths[1]
+                labels.append(f'Joueur {key} - {label} - Profondeur : {depth_label}')
+                plots.append(d[key])
+
+    # Si au moins une courbe a des données, afficher le graphique et la légende
+    if plots:
+        for label, values in zip(labels, plots):
+            plt.plot(values, marker='o', linestyle='-', label=label)
+
+        plt.title("temps d'éxécution")
+        plt.xlabel('Itération')
+        plt.ylabel('Temps')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
+    else:
+        print("Aucune donnée à afficher.")
 
 def selectionner_joueur(numero):
     print(f"Sélectionnez le type pour le joueur {numero}:")
