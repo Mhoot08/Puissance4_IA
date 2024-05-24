@@ -280,6 +280,7 @@ class Node:
 
 
 
+
 def defaultPolicy(v):
     while v.terminated is False:
         #Gerer quandd on retombe sur un même fils
@@ -345,45 +346,54 @@ def expand(v):
 
 
 while not game_over:
-    # Ask for Player 1 input
     if turn == 0:
-        #col = int(input("Player 1, choose a column (0-6):"))
+        choix = joueur1
+        profondeur = profondeur1
+    else:
+        choix = joueur2
+        profondeur = profondeur2
+
+    if choix == 1:
+        # joueur_humain
+        col = int(input(f"Player {turn + 1}, choose a column (0-6):"))
+        if is_valid_location(board, col):
+            row = get_next_open_row(board, col)
+
+    elif choix == 2:
+        # joueur_ucts
         if n == None:
-            n = uctsearch(board, 1)
+            n = uctsearch(board, turn + 1)
         else:
             for child in n.children:
                 if child.col == col_lastplayer:
-                    n = uctsearch(board, 1, child)
+                    n = uctsearch(board, turn + 1, child)
 
         col = n.col
-        print(f"Player 1, choose a column (0-6): {col}")
+        print(f"Player {turn + 1}, choose a column (0-6): {col}")
         row = get_next_open_row(board, col)
-        drop_piece(board, row, col, 1)
-        if winning_move(board,  row, col):
-            print("Player 1 wins!")
-            game_over = True
 
-    # Ask for Player 2 input
+
+    elif choix == 3:
+        # joueur_minimax
+        col = minimax(board, profondeur, turn + 1)
+        print(f"Player {turn + 1}, choose a column (0-6): {col}")
+        row = get_next_open_row(board, col)
+
+    elif choix == 4:
+        # joueur_alphabeta
+        col = alphabeta(board, profondeur, turn + 1)
+        print(f"Player {turn + 1}, choose a column (0-6): {col}")
+        row = get_next_open_row(board, col)
+
     else:
-        col = alphabeta(board, 3, 2)
-        print(f"Player 2, choose a column (0-6): {col}")
-        row = get_next_open_row(board, col)
-        drop_piece(board, row, col, 2)
-        col_lastplayer = col
-        if winning_move(board,  row, col):
-            print("Player 2 wins!")
-            game_over = True
+        print("erreur lors de la saisi des joueurs")
+        exit()
 
-
-        # col = int(input("Player 2, choose a column (0-6):"))
-        #
-        # if is_valid_location(board, col):
-        #     row = get_next_open_row(board, col)
-        #     drop_piece(board, row, col, 2)
-        #
-        #     if winning_move(board,  row, col):
-        #         print("Player 2 wins!")
-        #         game_over = True
+    drop_piece(board, row, col, turn + 1)
+    col_lastplayer = col
+    if winning_move(board, row, col):
+        print(f"Player {turn + 1} wins!")
+        game_over = True
 
     print_board(board)
     turn += 1
