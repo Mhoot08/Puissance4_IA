@@ -1,6 +1,8 @@
 import copy
 import random
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
 
 ROWS = 6
 COLS = 7
@@ -233,22 +235,47 @@ def joueurMinAlphaBeta(n,p,alpha, beta, row, col):
 turn = 0
 
 class Node:
-    def __init__(self, board, colNotFull, piece, terminated=False, parent=None):
+    def __init__(self, board, piece, parent, row, col):
         self.piece = piece
         self.board = copy.deepcopy(board)
-        self.row = None
-        self.col = None
-        self.colNotFull = colNotFull
+        self.row = row
+        self.col = col
+        self.colNotFull = self.computeColNotfullAndAddchield(board, parent)
         self.parent = parent
         self.children = []
-        self.terminated = terminated
+        self.terminated = False
         self.isFullyExpanded = False
+        self.visits = 1
+        self.score = 0
+        self.computeTerminated()
+        #self.toString()
 
+    def computeColNotfullAndAddchield(self, board, parent):
+        if parent is not None:
+            parent.add_child(self)
+            colNotFull = copy.deepcopy(parent.colNotFull)
+            if self.row == ROWS - 1:
+                colNotFull.remove(self.col)
+        else:
+            colNotFull = []
+            for c in range(COLS):
+                if board[ROWS - 1][c] == 0:
+                    colNotFull.append(c)
+        return colNotFull
 
     def add_child(self, child):
         self.children.append(child)
-        isExpanded = all(isExpanded for isExpanded in self.children.isFullyExpanded) and len(self.children) == len(self.colNotFull)
+        self.isFullyExpanded = len(self.children) == len(self.colNotFull)
 
+
+    def computeTerminated(self):
+        if self.colNotFull == [] or winning_move(self.board, self.row, self.col):
+            self.terminated = True
+            self.isFullyExpanded = True
+
+    def toString(self):
+        print(f"Piece: {self.piece}")
+        print_board(self.board)
 
 
 
@@ -261,16 +288,7 @@ def defaultPolicy(v):
         piece_inverse = 2 if v.piece == 1 else 1
         row = get_next_open_row(n, col)
         n[row][col] = piece_inverse
-        colNotFull = []
-        for c in range(COLS):
-            if board[c][ROWS - 1] == 0:
-                colNotFull.append(c)
-        parent = v
-        v = Node(board, colNotFull, piece_inverse, v)
-        parent.add_child(v)
-        if colNotFull == [] or winning_move(n, row, col):
-            v.terminated = True
-            v.isFullyExpanded = True
+        v = Node(n, piece_inverse, v, row, col)
     return eval_fonction(v.board)
 
 def backup(v, delta):
@@ -280,15 +298,24 @@ def backup(v, delta):
         delta = -delta
         v = v.parent
 
-def bestChild(v, c):
-    return max(v.children, key=lambda x: x.score/x.visits + c * np.sqrt(2 * np.log(v.visits) / x.visits))
 
-def uctsearch(board, piece):
-    colNotFull = []
-    for c in range(COLS):
-        if board[c][ROWS-1] == 0:
-            colNotFull.append(c)
-    v0 = Node(board, colNotFull, piece )
+def bestChild(v, c):
+    max= float('-inf')
+    max_child = None
+    for child in v.children:
+        temp = child.score/child.visits + c * np.sqrt(2 * np.log(v.visits) / child.visits)
+        if temp > max:
+            max = temp
+            max_child = child
+    return max_child
+
+def uctsearch(board, piece, v0=None):
+    if v0 == None:
+        colNotFull = []
+        for c in range(COLS):
+            if board[ROWS-1][c] == 0:
+                colNotFull.append(c)
+        v0 = Node(board, piece, None, 0, 0)
     for i in range(1000):
         v1 = treePolicy(v0)
         delta = defaultPolicy(v1)
@@ -296,7 +323,8 @@ def uctsearch(board, piece):
     return bestChild(v0, 0)
 
 
-def treePolicy(v):
+def treePolicy(v0):
+    v = v0
     while not v.terminated:
         if not v.isFullyExpanded:
             return expand(v)
@@ -306,14 +334,28 @@ def treePolicy(v):
     return v
 
 def expand(v):
-    pass
+    for c in v.colNotFull:
+        if c not in [child.col for child in v.children]:
+            n = copy.deepcopy(v.board)
+            piece_inverse = 2 if v.piece == 1 else 1
+            row = get_next_open_row(n, c)
+            n[row][c] = piece_inverse
+            child = Node(n, piece_inverse, v, row, c)
+            return child
 
 
 while not game_over:
     # Ask for Player 1 input
     if turn == 0:
         #col = int(input("Player 1, choose a column (0-6):"))
-        col = alphabeta(board, 4, 1)
+        if n == None:
+            n = uctsearch(board, 1)
+        else:
+            for child in n.children:
+                if child.col == col_lastplayer:
+                    n = uctsearch(board, 1, child)
+
+        col = n.col
         print(f"Player 1, choose a column (0-6): {col}")
         row = get_next_open_row(board, col)
         drop_piece(board, row, col, 1)
@@ -327,6 +369,7 @@ while not game_over:
         print(f"Player 2, choose a column (0-6): {col}")
         row = get_next_open_row(board, col)
         drop_piece(board, row, col, 2)
+        col_lastplayer = col
         if winning_move(board,  row, col):
             print("Player 2 wins!")
             game_over = True
@@ -345,3 +388,4 @@ while not game_over:
     print_board(board)
     turn += 1
     turn %= 2
+
