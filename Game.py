@@ -7,14 +7,21 @@ import matplotlib.pyplot as plt
 ROWS = 6
 COLS = 7
 
+
 def create_board():
     return np.zeros((ROWS, COLS), dtype=int)
 
+
 def drop_piece(board, row, col, piece):
     board[row][col] = piece
+
+
 game_over = False
+
+
 def is_valid_location(board, col):
-    return board[ROWS-1][col] == 0
+    return board[ROWS - 1][col] == 0
+
 
 def get_next_open_row(board, col):
     for r in range(ROWS):
@@ -22,72 +29,73 @@ def get_next_open_row(board, col):
             return r
     return None
 
-def winning_move(board, row, col):
 
+def winning_move(board, row, col):
     piece = board[row][col]
     if piece == 0:
         return False
 
     # Check horizontal locations
-    if col <= COLS-4:
-        if all([board[row][col+i] == piece for i in range(4)]):
+    if col <= COLS - 4:
+        if all([board[row][col + i] == piece for i in range(4)]):
             return True
-    if 1 <= col <= COLS-3:
-        if all([board[row][col-1+i] == piece for i in range(4)]):
+    if 1 <= col <= COLS - 3:
+        if all([board[row][col - 1 + i] == piece for i in range(4)]):
             return True
-    if 2 <= col <= COLS-2:
-        if all([board[row][col-2+i] == piece for i in range(4)]):
+    if 2 <= col <= COLS - 2:
+        if all([board[row][col - 2 + i] == piece for i in range(4)]):
             return True
-    if 3 <= col <= COLS-1:
-        if all([board[row][col-3+i] == piece for i in range(4)]):
+    if 3 <= col <= COLS - 1:
+        if all([board[row][col - 3 + i] == piece for i in range(4)]):
             return True
 
     # Check vertical locations
-    if row <= ROWS-4:
-        if all([board[row+i][col] == piece for i in range(4)]):
+    if row <= ROWS - 4:
+        if all([board[row + i][col] == piece for i in range(4)]):
             return True
-    if 1 <= row <= ROWS-3:
-        if all([board[row-1+i][col] == piece for i in range(4)]):
+    if 1 <= row <= ROWS - 3:
+        if all([board[row - 1 + i][col] == piece for i in range(4)]):
             return True
-    if 2 <= row <= ROWS-2:
-        if all([board[row-2+i][col] == piece for i in range(4)]):
+    if 2 <= row <= ROWS - 2:
+        if all([board[row - 2 + i][col] == piece for i in range(4)]):
             return True
-    if 3 <= row <= ROWS-1:
-        if all([board[row-3+i][col] == piece for i in range(4)]):
+    if 3 <= row <= ROWS - 1:
+        if all([board[row - 3 + i][col] == piece for i in range(4)]):
             return True
-
 
     # Check positively sloped diagonals
-    if row <= ROWS-4 and col <= COLS-4:
-        if all([board[row+i][col+i] == piece for i in range(4)]):
+    if row <= ROWS - 4 and col <= COLS - 4:
+        if all([board[row + i][col + i] == piece for i in range(4)]):
             return True
-    if 1 <= row <= ROWS-3 and 1 <= col <= COLS-3:
-        if all([board[row-1+i][col-1+i] == piece for i in range(4)]):
+    if 1 <= row <= ROWS - 3 and 1 <= col <= COLS - 3:
+        if all([board[row - 1 + i][col - 1 + i] == piece for i in range(4)]):
             return True
-    if 2 <= row <= ROWS-2 and 2 <= col <= COLS-2:
-        if all([board[row-2+i][col-2+i] == piece for i in range(4)]):
+    if 2 <= row <= ROWS - 2 and 2 <= col <= COLS - 2:
+        if all([board[row - 2 + i][col - 2 + i] == piece for i in range(4)]):
             return True
-    if 3 <= row <= ROWS-1 and 3 <= col <= COLS-1:
-        if all([board[row-3+i][col-3+i] == piece for i in range(4)]):
+    if 3 <= row <= ROWS - 1 and 3 <= col <= COLS - 1:
+        if all([board[row - 3 + i][col - 3 + i] == piece for i in range(4)]):
             return True
 
     # Check negatively sloped diagonals
-    if 3 <= row <= ROWS-1 and col <= COLS-4:
-        if all([board[row-i][col+i] == piece for i in range(4)]):
+    if 3 <= row <= ROWS - 1 and col <= COLS - 4:
+        if all([board[row - i][col + i] == piece for i in range(4)]):
             return True
-    if 2 <= row <= ROWS-2 and 1 <= col <= COLS-3:
-        if all([board[row+1-i][col-1+i] == piece for i in range(4)]):
+    if 2 <= row <= ROWS - 2 and 1 <= col <= COLS - 3:
+        if all([board[row + 1 - i][col - 1 + i] == piece for i in range(4)]):
             return True
-    if 1 <= row <= ROWS-3 and 2 <= col <= COLS-2:
-        if all([board[row+2-i][col-2+i] == piece for i in range(4)]):
+    if 1 <= row <= ROWS - 3 and 2 <= col <= COLS - 2:
+        if all([board[row + 2 - i][col - 2 + i] == piece for i in range(4)]):
             return True
-    if row <= ROWS-4 and 3 <= col <= COLS-1:
-        if all([board[row+3-i][col-3+i] == piece for i in range(4)]):
+    if row <= ROWS - 4 and 3 <= col <= COLS - 1:
+        if all([board[row + 3 - i][col - 3 + i] == piece for i in range(4)]):
             return True
     return False
 
+
 def print_board(board):
     print(np.flip(board, 0))
+
 
 def eval_fonction(board):
     score_player1 = eval_player(board, 1, 2)
@@ -108,6 +116,7 @@ def get_score(nb):
         case 4:
             return 1000
 
+
 def eval_player(board, piece, enemy_piece):
     score_player = 0
 
@@ -120,11 +129,10 @@ def eval_player(board, piece, enemy_piece):
 
     # Check vertical locations
     for c in range(COLS):
-        for r in range(ROWS-3):
-            element = board[r][c], board[r+1][c], board[r + 2][c], board[r + 3][c]
+        for r in range(ROWS - 3):
+            element = board[r][c], board[r + 1][c], board[r + 2][c], board[r + 3][c]
             if element.count(enemy_piece) == 0:
                 score_player += get_score(element.count(piece))
-
 
     # Check positively sloped diagonals
     for c in range(COLS - 3):
@@ -137,10 +145,11 @@ def eval_player(board, piece, enemy_piece):
     for c in range(COLS - 3):
         for r in range(3, ROWS):
             element = board[r][c], board[r - 1][c + 1], board[r - 2][c + 2], board[r - 3][
-                c + 3] == piece
+                                                                                 c + 3] == piece
             if element.count(enemy_piece) == 0:
                 score_player += get_score(element.count(piece))
     return score_player
+
 
 ##Algo MiniMax
 
@@ -151,7 +160,8 @@ def minimax(board, maxProfondeur, player):
         eval, action = joueurMin(board, maxProfondeur, 0, 0)
     return action
 
-def joueurMax(n,p, row, col):
+
+def joueurMax(n, p, row, col):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('-inf')
@@ -167,8 +177,11 @@ def joueurMax(n,p, row, col):
                 action = c
     return u, action
 
+
 board = create_board()
-def joueurMin(n,p, row, col):
+
+
+def joueurMin(n, p, row, col):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('inf')
@@ -178,11 +191,12 @@ def joueurMin(n,p, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 2
-            eval = joueurMax(n_deepcopy, p-1, r, c)[0]
+            eval = joueurMax(n_deepcopy, p - 1, r, c)[0]
             if eval < u:
                 u = eval
                 action = c
     return u, action
+
 
 ##Algo Alpha-Beta
 
@@ -193,7 +207,8 @@ def alphabeta(board, maxProfondeur, player):
         eval, action = joueurMinAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0)
     return action
 
-def joueurMaxAlphaBeta(n,p, alpha, beta, row, col):
+
+def joueurMaxAlphaBeta(n, p, alpha, beta, row, col):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('-inf')
@@ -203,7 +218,7 @@ def joueurMaxAlphaBeta(n,p, alpha, beta, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 1
-            eval = joueurMinAlphaBeta(n_deepcopy, p - 1,alpha, beta, r, c)[0]
+            eval = joueurMinAlphaBeta(n_deepcopy, p - 1, alpha, beta, r, c)[0]
             if eval > u:
                 u = eval
                 action = c
@@ -212,7 +227,8 @@ def joueurMaxAlphaBeta(n,p, alpha, beta, row, col):
                 return u, action
     return u, action
 
-def joueurMinAlphaBeta(n,p,alpha, beta, row, col):
+
+def joueurMinAlphaBeta(n, p, alpha, beta, row, col):
     if p == 0 or winning_move(n, row, col):
         return eval_fonction(n), None
     u = float('inf')
@@ -222,7 +238,7 @@ def joueurMinAlphaBeta(n,p,alpha, beta, row, col):
         r = get_next_open_row(n_deepcopy, c)
         if r is not None:
             n_deepcopy[r][c] = 2
-            eval = joueurMaxAlphaBeta(n_deepcopy, p-1,alpha, beta, r, c)[0]
+            eval = joueurMaxAlphaBeta(n_deepcopy, p - 1, alpha, beta, r, c)[0]
             if eval < u:
                 u = eval
                 action = c
@@ -231,8 +247,10 @@ def joueurMinAlphaBeta(n,p,alpha, beta, row, col):
                 return u, action
     return u, action
 
+
 ## Algo MCTS
 turn = 0
+
 
 class Node:
     def __init__(self, board, piece, parent, row, col):
@@ -248,7 +266,7 @@ class Node:
         self.visits = 1
         self.score = 0
         self.computeTerminated()
-        #self.toString()
+        # self.toString()
 
     def computeColNotfullAndAddchield(self, board, parent):
         if parent is not None:
@@ -267,7 +285,6 @@ class Node:
         self.children.append(child)
         self.isFullyExpanded = len(self.children) == len(self.colNotFull)
 
-
     def computeTerminated(self):
         if self.colNotFull == [] or winning_move(self.board, self.row, self.col):
             self.terminated = True
@@ -278,12 +295,9 @@ class Node:
         print_board(self.board)
 
 
-
-
-
 def defaultPolicy(v):
     while v.terminated is False:
-        #Gerer quandd on retombe sur un même fils
+        # Gerer quandd on retombe sur un même fils
         col = random.choice(v.colNotFull)
         n = copy.deepcopy(v.board)
         piece_inverse = 2 if v.piece == 1 else 1
@@ -291,6 +305,7 @@ def defaultPolicy(v):
         n[row][col] = piece_inverse
         v = Node(n, piece_inverse, v, row, col)
     return eval_fonction(v.board)
+
 
 def backup(v, delta):
     while v is not None:
@@ -301,20 +316,21 @@ def backup(v, delta):
 
 
 def bestChild(v, c):
-    max= float('-inf')
+    max = float('-inf')
     max_child = None
     for child in v.children:
-        temp = child.score/child.visits + c * np.sqrt(2 * np.log(v.visits) / child.visits)
+        temp = child.score / child.visits + c * np.sqrt(2 * np.log(v.visits) / child.visits)
         if temp > max:
             max = temp
             max_child = child
     return max_child
 
+
 def uctsearch(board, piece, v0=None):
     if v0 == None:
         colNotFull = []
         for c in range(COLS):
-            if board[ROWS-1][c] == 0:
+            if board[ROWS - 1][c] == 0:
                 colNotFull.append(c)
         v0 = Node(board, piece, None, 0, 0)
     for i in range(1000):
@@ -330,9 +346,10 @@ def treePolicy(v0):
         if not v.isFullyExpanded:
             return expand(v)
         else:
-            #Deuxième argument = c dans BestChild
-            v = bestChild(v, 1/np.sqrt(2))
+            # Deuxième argument = c dans BestChild
+            v = bestChild(v, 1 / np.sqrt(2))
     return v
+
 
 def expand(v):
     for c in v.colNotFull:
@@ -345,6 +362,25 @@ def expand(v):
             return child
 
 
+def selectionner_joueur(numero):
+    print(f"Sélectionnez le type pour le joueur {numero}:")
+    print("1. Humain")
+    print("2. MCTS")
+    print("3. Minimax")
+    print("4. AlphaBeta")
+    choix = int(input("Votre choix: "))
+    profondeur = None
+    if choix == 3 or choix == 4:
+        print(f"Sélectionnez la profondeur souhaité pour l'algorithme ")
+        profondeur = int(input("Votre choix: "))
+    return choix, profondeur
+
+
+joueur1, profondeur1 = selectionner_joueur(1)
+joueur2, profondeur2 = selectionner_joueur(2)
+
+n = None
+col_lastplayer = None
 while not game_over:
     if turn == 0:
         choix = joueur1
@@ -398,4 +434,3 @@ while not game_over:
     print_board(board)
     turn += 1
     turn %= 2
-
