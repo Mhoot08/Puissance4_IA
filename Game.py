@@ -94,7 +94,16 @@ def winning_move(board, row, col):
 
 
 def print_board(board):
-    print(np.flip(board, 0))
+    # Convertir les éléments 1 en 'X', les éléments 2 en 'O' et les autres en ' '
+    board = np.where(board == 1, '\033[91mX\033[0m', np.where(board == 2, '\033[93mO\033[0m', ' '))
+
+    # Créer une chaîne de caractères pour la grille avec des lignes de séparation
+    grid = '\n' + '+---' * len(board[0]) + '+\n'
+    for row in reversed(board):
+        grid += '| ' + ' | '.join(row) + ' |\n' + '+---' * len(board[0]) + '+\n'
+
+    # Afficher la grille
+    print(grid)
 
 
 def eval_fonction(board):
@@ -152,10 +161,12 @@ def eval_player(board, piece, enemy_piece):
 
 
 ##Algo MiniMax
-
+list_time_minimax = {"type" : ["minimax"], "profondeur" : [0,0],"1": [], "2": []}
 def minimax(board, maxProfondeur, player):
     if player == 1:
-        eval, action = joueurMax(board, maxProfondeur, 0, 0)
+        eval, action = joueurMax(board, maxProfondeur, 0, 0, player)
+        end_time = time.time()
+        list_time_minimax["1"].append(end_time - start_time)
     else:
         eval, action = joueurMin(board, maxProfondeur, 0, 0)
     return action
@@ -199,10 +210,12 @@ def joueurMin(n, p, row, col):
 
 
 ##Algo Alpha-Beta
-
+list_time_alphabeta = {"type" : ["alphabeta"], "profondeur" : [0,0], "1": [], "2": []}
 def alphabeta(board, maxProfondeur, player):
     if player == 1:
-        eval, action = joueurMaxAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0)
+        eval, action = joueurMaxAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0, player)
+        end_time = time.time()
+        list_time_alphabeta["1"].append(end_time - start_time)
     else:
         eval, action = joueurMinAlphaBeta(board, maxProfondeur, float("-inf"), float("inf"), 0, 0)
     return action
@@ -434,3 +447,5 @@ while not game_over:
     print_board(board)
     turn += 1
     turn %= 2
+
+plot_from_dicts(list_time_minimax, list_time_alphabeta)
